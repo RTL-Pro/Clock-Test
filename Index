@@ -1,0 +1,272 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Analog Clock Reading Test (Dynamic Number Placement)</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h1 {
+      margin-bottom: 1em;
+    }
+
+    /* Clock container (200×200) */
+    .clock {
+      position: relative;
+      margin: 0 auto 20px auto;
+      width: 200px;
+      height: 200px;
+      border: 5px solid #333;
+      border-radius: 80%;
+      background: #fff;
+      box-sizing: border-box;
+      color: blue;
+    }
+
+    /* Small center dot on the clock face */
+    .clock::before {
+      content: "";
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      background: #333;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      border-radius: 50%;
+      z-index: 10;
+    }
+
+    /* Container that will hold all the clock numbers (dynamically placed) */
+    #numbersContainer {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      color: blue;
+    }
+
+    /* Style each clock number */
+    .number {
+      position: absolute;
+      width: 24px;
+      height: 24px;
+      line-height: 24px; /* vertically center the text */
+      text-align: center;
+      font-weight: bold;
+      color: black;
+     
+    }
+
+    /* Hour hand */
+    .hour-hand {
+      position: absolute;
+      width: 4px;
+      height: 40px;  /* shorter hand */
+      background: blue;
+      top: 50%;
+      left: 50%;
+      transform-origin: bottom center;
+      transform: translateX(-50%) translateY(-100%) rotate(0deg);
+      border-radius: 2px;
+      z-index: 10;
+    }
+
+    /* Minute hand */
+    .minute-hand {
+      position: absolute;
+      width: 4px;
+      height: 70px;  /* longer hand */
+      background: green;
+      top: 50%;
+      left: 50%;
+      transform-origin: bottom center;
+      transform: translateX(-50%) translateY(-100%) rotate(0deg);
+      border-radius: 2px;
+      z-index: 9;
+    }
+
+    .digital-input {
+      margin-bottom: 20px;
+    }
+
+    .digital-input input {
+      width: 40px;
+      text-align: center;
+      font-size: 1.1em;
+      margin: 0 5px;
+    }
+
+    .digital-input span {
+      font-size: 1.2em;
+      margin: 0 5px;
+    }
+
+    button {
+      padding: 8px 16px;
+      font-size: 1em;
+      margin: 5px;
+      cursor: pointer;
+    }
+
+    #result {
+      font-weight: bold;
+      margin-top: 15px;
+     
+    }
+  </style>
+</head>
+<body>
+  <h1 style="color: blue;">Test Your Analog Clock Reading Skills</h1>
+
+  <!-- Analog Clock Display -->
+  <div class="clock">
+    <!-- This container will be populated with numbers by JavaScript -->
+    <div id="numbersContainer"></div>
+
+    <!-- The hour and minute hands -->
+    <div class="hour-hand" id="hourHand"></div>
+    <div class="minute-hand" id="minuteHand"></div>
+  </div>
+
+  <!-- Digital Format Input (HH:MM) -->
+  <div class="digital-input">
+    <input type="text" id="hourInput" maxlength="2" placeholder="HH" />
+    <span>:</span>
+    <input type="text" id="minuteInput" maxlength="2" placeholder="MM" />
+  </div>
+
+  <button id="checkButton">Check</button>
+  <button id="newTimeButton">New Time</button>
+  <p id="result" class="large-text"></p>
+
+  <script>
+  var currentHour = 0;
+  var currentMinute = 0;
+
+  function placeClockNumbers() {
+    var numbersContainer = document.getElementById("numbersContainer");
+    numbersContainer.innerHTML = "";
+
+    var centerX = 100;
+    var centerY = 100;
+    var radius = 80;
+
+    for (var i = 1; i <= 12; i++) {
+      var numberDiv = document.createElement("div");
+      numberDiv.className = "number";
+      numberDiv.textContent = i;
+
+      // angle in degrees
+      var angleDeg = i * 30 - 90;
+      var angleRad = (angleDeg * Math.PI) / 180;
+
+      var x = centerX + radius * Math.cos(angleRad);
+      var y = centerY + radius * Math.sin(angleRad);
+
+      // offset .number by half its width/height
+      numberDiv.style.left = (x - 16) + "px";
+      numberDiv.style.top = (y - 17) + "px";
+
+      numbersContainer.appendChild(numberDiv);
+    }
+  }
+
+  function updateClock(hour, minute) {
+    var hourDegrees = (hour % 12) * 30 + minute * 0.5;
+    var minuteDegrees = minute * 6;
+
+    var hourHand = document.getElementById("hourHand");
+    var minuteHand = document.getElementById("minuteHand");
+
+    hourHand.style.transform =
+      "translateX(-50%) translateY(-100%) rotate(" + hourDegrees + "deg)";
+    minuteHand.style.transform =
+      "translateX(-50%) translateY(-100%) rotate(" + minuteDegrees + "deg)";
+  }
+
+  function getRandomTime() {
+    var hour = Math.floor(Math.random() * 12) + 1;
+    var rand = Math.floor(Math.random() * 100);
+    var minute;
+
+    if (rand < 33) {
+      minute = 45;
+    } else if (rand < 66) {
+      minute = 15;
+    } else if (rand < 83) {
+      minute = 30;
+    } else {
+      var validMultiples = [0, 5, 10, 20, 25, 35, 40, 50, 55];
+      var randomIndex = Math.floor(Math.random() * validMultiples.length);
+      minute = validMultiples[randomIndex];
+    }
+    return { hour: hour, minute: minute };
+  }
+
+  function generateNewTime() {
+    var time = getRandomTime();
+    currentHour = time.hour;
+    currentMinute = time.minute;
+    updateClock(currentHour, currentMinute);
+
+    document.getElementById("hourInput").value = "";
+    document.getElementById("minuteInput").value = "";
+    document.getElementById("result").textContent = "";
+  }
+
+  function checkAnswer() {
+    var hourInputValue = parseInt(document.getElementById("hourInput").value, 10);
+    var minuteInputValue = parseInt(document.getElementById("minuteInput").value, 10);
+    var resultElem = document.getElementById("result");
+
+    if (isNaN(hourInputValue) || isNaN(minuteInputValue)) {
+      resultElem.textContent = "الأرقام المدخلة غير صحيحه";
+      resultElem.style.color = "red";
+      resultElem.style.fontSize = "1.5em";
+      return;
+    }
+    if (hourInputValue < 1 || hourInputValue > 12) {
+      resultElem.textContent = "أرقام الساعة بين 1 و 12";
+      resultElem.style.color = "red";
+      resultElem.style.fontSize = "1.5em";
+      return;
+    }
+    if (minuteInputValue < 0 || minuteInputValue > 59) {
+      resultElem.textContent = "أرقام الدقائق بين 0 و 59";
+      resultElem.style.color = "red";
+      resultElem.style.fontSize = "1.5em";
+      return;
+    }
+
+    if (hourInputValue === currentHour && minuteInputValue === currentMinute) {
+      resultElem.textContent = "صحيييح! أحسنت!";
+      resultElem.style.color = "green";
+      resultElem.style.fontSize = "1.5em";
+    } else {
+      // fallback for older Safari: no padStart()
+      var correctMinuteStr = ("00" + currentMinute).slice(-2);
+      resultElem.textContent =
+        "خطأ. التوقيت الصحيح هـو  " + currentHour + ":" + correctMinuteStr + ".";
+      resultElem.style.color = "red";
+      resultElem.style.fontSize = "1.5em";
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", function() {
+    placeClockNumbers();
+    generateNewTime();
+    document.getElementById("checkButton").addEventListener("click", checkAnswer);
+    document.getElementById("newTimeButton").addEventListener("click", generateNewTime);
+  });
+</script>
+</body>
+</html>
+
+
